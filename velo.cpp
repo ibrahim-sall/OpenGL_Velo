@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <glm/glm.hpp>
 
@@ -14,32 +15,30 @@ void Velo::build(){
      // On crée un premier disque
 
     const int numSegments = 100;
-    const float radius = 0.25f;
-    const float x = -0.5f;
-    const float y = -0.5f;
+    const float x = 0.f;
+    const float y = 0.f;
     const float r = 1.0f;
     std::vector<glm::vec3> disk_vertices;
     std::vector<glm::vec2> disk_uvs;
-    std::vector<unsigned int> disk_indices;
 
     disk_vertices.push_back(glm::vec3(x, y, 0.0f));
     disk_uvs.push_back(glm::vec2(0.5f, 0.5f));
 
     for (int i = 0; i < numSegments; ++i) {
         float const t = 2 * M_PI * (float)i / (float)numSegments;
-        disk_vertices.push_back(glm::vec3(x + sin(t) * radius, y + cos(t) * radius, 0.0f));
+        disk_vertices.push_back(glm::vec3(x + sin(t) * r, y + cos(t) * r, 0.0f));
         disk_uvs.push_back(glm::vec2((sin(t) * 0.5f) + 0.5f, (cos(t) * 0.5f) + 0.5f));
         disk_vertices.push_back(glm::vec3(x, y, 0.0f));
         disk_uvs.push_back(glm::vec2(0.5f, 0.5f));
     }
 
-    o = Object(disk_vertices, disk_uvs, path + "/textures/roche.jpg");
-    };
+    Object o = Object(disk_vertices, disk_uvs, path + "/textures/roche.jpg"); 
+}
 
-Velo::~Velo(){
+Velo::~Velo() {
     //appel au destructeur objet implicite
-};
+}
 
-Object Velo::getVelo(){
+Object Velo::getVelo() {
     return o;
-};
+}

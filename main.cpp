@@ -93,12 +93,13 @@ int main()
 
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Velo velo = Velo(path + "/textures/roche.jpg");
+    Velo velo(path + "/textures/roche.jpg");
     velo.build();
+    
     Object o = velo.getVelo();
-
 /////////////////////////Création de la matrice MVP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    
     cam.computeMatrices(width, height);
     glm::mat4 m = o.getModelMatrix();
     glm::mat4 v = cam.getViewMatrix();
@@ -108,7 +109,6 @@ int main()
 
     shader.setUniformMat4f("MVP", mvp);
 
-
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -116,7 +116,7 @@ int main()
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     //On indique la couleur de fond
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
 
     //On autorise les tests de profondeur
 
@@ -126,24 +126,38 @@ int main()
 
     float lastTime = glfwGetTime();
     float currentTime, deltaTime;
+    float logtime = glfwGetTime();
 
     while(glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window)){
-
         currentTime = glfwGetTime();
         deltaTime = currentTime-lastTime;
         lastTime = currentTime;
+        logtime += deltaTime;
+        
+        //o->rotationAngles.y = currentTime;
 
-        //o.rotationAngles.y=currentTime;
-
-        //o.position.x=-2;
+        //o->position.x=-2;
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
+
         m = o.getModelMatrix();
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
 
         mvp = p*v*m;
+        if (logtime >= 1.0f) {
+            cout << "MVP Matrix: "<< endl;
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 4; ++j) {
+                    cout << mvp[i][j] << " ";
+                }
+                cout << endl;
+            }
+            logtime = 0.0f;
+        }
+        static float logTime = 0.0f;
+        logTime += deltaTime;
         shader.setUniformMat4f("MVP", mvp);
 
         ////////////////On commence par vider les buffers///////////////
@@ -166,9 +180,6 @@ int main()
         glfwPollEvents();
     }
     glfwTerminate();
-
-
-
 
     return 0;
 }
