@@ -3,10 +3,16 @@
 in vec2 UV;
 
 uniform sampler2D myTextureSampler;
+uniform vec3 color;
+uniform float power;
 
-out vec3 color;
+out vec4 FragColor;
 
 void main(){
-    color = texture(myTextureSampler,UV).rgb;
+    vec3 textureColor = texture(myTextureSampler,UV).rgb;
 
+    vec3 ambientLight = color * power;
+
+    vec3 finalColor = textureColor * ambientLight;
+    FragColor = vec4(finalColor, 1.0);
 }

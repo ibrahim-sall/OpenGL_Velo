@@ -42,5 +42,7 @@ add_executable(Open_gl
   fpscontrols.cpp
   velo.h
   velo.cpp
+  pointlight.h
+  pointlight.cpp
 )
 target_link_libraries(Open_gl Qt${QT_VERSION_MAJOR}::Core glfw GLEW libGLEW.so libstb.so libGLU.so libGL.so)

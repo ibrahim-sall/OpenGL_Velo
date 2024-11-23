@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "navigationcontrols.h"
 #include "velo.h"
+#include "pointlight.h"
 
 
 
@@ -98,7 +99,6 @@ int main()
 
     
     cam.computeMatrices(width, height);
-    cam.position.z = 5.0f;
     glm::mat4 m = o.getModelMatrix();
     glm::mat4 v = cam.getViewMatrix();
     glm::mat4 p = cam.getProjectionMatrix();
@@ -107,6 +107,11 @@ int main()
 
     shader.setUniformMat4f("MVP", mvp);
 
+/////////////////////////Lumière ambiante/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    PointLight pointLight(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.72f);
+    pointLight.Bind(shader);
+
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -114,7 +119,7 @@ int main()
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     //On indique la couleur de fond
-    glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
+    //glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
 
     //On autorise les tests de profondeur
 

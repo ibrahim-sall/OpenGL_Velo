@@ -14,6 +14,7 @@ class Object
 {
 public:
     Object(std::vector< glm::vec3 > vertices, std::vector< glm::vec2 > uvs, std::string texturePath);
+    Object(std::vector< glm::vec3 > vertices, std::vector< glm::vec2 > uvs,  std::vector< glm::vec3 > normalsb, std::string texturePath);
     ~Object();
     Object(std::string sting, std::string texturePath);
     void Bind() const;
@@ -27,6 +28,7 @@ private:
     VertexBuffer *m_vb;
     UVBuffer *m_uvsb;
     Texture *m_texture;
+    VertexBuffer *m_normalsb;
 
 
 };

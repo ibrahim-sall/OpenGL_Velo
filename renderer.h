@@ -9,6 +9,7 @@
 #include "shader.h"
 #include "object.h"
 
+
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 #define GLCall(x) GLClearError();\
     x;\

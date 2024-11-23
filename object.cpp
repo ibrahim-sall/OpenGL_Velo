@@ -13,10 +13,10 @@
 Object::Object(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::string texturePath):m_vb(0), m_uvsb(0), m_texture(0), position(0,0,0), rotationAngles(0,0,0)
 {
 
-     m_vb = new VertexBuffer(vertices);
-     m_uvsb = new UVBuffer(uvs);
-
+    m_vb = new VertexBuffer(vertices);
+    m_uvsb = new UVBuffer(uvs);
     m_texture = new Texture(texturePath);
+    m_normalsb = nullptr;
 
 }
 Object::Object(std::string string, std::string texturePath){
@@ -28,6 +28,13 @@ Object::Object(std::string string, std::string texturePath){
     }
     m_vb = new VertexBuffer(vertices);
     m_uvsb = new UVBuffer(uvs);
+    m_texture = new Texture(texturePath);
+}
+Object::Object(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<glm::vec3> normals, std::string texturePath):m_vb(0), m_uvsb(0), m_texture(0), position(0,0,0), rotationAngles(0,0,0)
+{
+    m_vb = new VertexBuffer(vertices);
+    m_uvsb = new UVBuffer(uvs);
+    m_normalsb = new VertexBuffer(normals);
     m_texture = new Texture(texturePath);
 }
 
@@ -143,3 +150,4 @@ bool Object::loadOBJ(const char *path, std::vector<glm::vec3> &out_vertices, std
 
     return true;
 }
+
