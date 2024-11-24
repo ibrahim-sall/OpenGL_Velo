@@ -124,7 +124,10 @@ int main()
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     //On indique la couleur de fond
-    //glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
+    const glm::vec4 colorlightblue = glm::vec4(0.392f, 0.584f, 0.929f, 1.0f);
+    const glm::vec4 colordarkblue = glm::vec4(0.098f, 0.098f, 0.439f, 1.0f);
+
+    glClearColor(colorlightblue[0], colorlightblue[1], colorlightblue[3], colorlightblue[3]);
 
     //On autorise les tests de profondeur
 
@@ -148,7 +151,14 @@ int main()
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
 
-        ambiantLight.SetPower(0.5f + 0.5f * sin(currentTime), shader);
+        ambiantLight.SetPower(0.5f + 0.4f * sin(currentTime), shader);
+
+
+        glClearColor(
+        colorlightblue[0] + (colordarkblue[0] - colorlightblue[0]) * (0.5f + 0.5f * sin(-currentTime)),
+        colorlightblue[1] + (colordarkblue[1] - colorlightblue[1]) * (0.5f + 0.5f * sin(-currentTime)),
+        colorlightblue[2] + (colordarkblue[2] - colorlightblue[2]) * (0.5f + 0.5f * sin(-currentTime)),
+        colorlightblue[3]);
 
         m = o.getModelMatrix();
         v = cam.getViewMatrix();
