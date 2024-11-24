@@ -19,3 +19,7 @@ void PointLight::Bind(Shader shader){
     shader.setUniform3fv("color", color );
     shader.setUniform1f("power", power);
 }
+void PointLight::SetPower(float power, Shader shader){
+    this->power = power;
+    shader.setUniform1f("power", power);
+}

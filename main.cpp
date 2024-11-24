@@ -109,7 +109,12 @@ int main()
 
 /////////////////////////Lumière ambiante/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    PointLight pointLight(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.72f);
+    PointLight ambiantLight(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.72f);
+    ambiantLight.Bind(shader);
+
+/////////////////////////Lumière sur le guidon/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    glm::vec3 handlebarPosition = o.getHandlebarPosition(); // Assuming this function exists and returns the position of the handlebar
+    PointLight pointLight(handlebarPosition, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     pointLight.Bind(shader);
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,20 +134,21 @@ int main()
 
     float lastTime = glfwGetTime();
     float currentTime, deltaTime;
-    float logtime = glfwGetTime();
+
 
     while(glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window)){
         currentTime = glfwGetTime();
         deltaTime = currentTime-lastTime;
         lastTime = currentTime;
-        logtime += deltaTime;
-        
-        o.rotationAngles.y = currentTime;
 
-        o.position.x=-2;
+        o.rotationAngles.y = currentTime;
+        o.position.x = -5.0f * sin(currentTime);
+        o.position.z = -5.0f * cos(currentTime);
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
+
+        ambiantLight.SetPower(0.5f + 0.5f * sin(currentTime), shader);
 
         m = o.getModelMatrix();
         v = cam.getViewMatrix();
@@ -150,22 +156,12 @@ int main()
 
         mvp = p*v*m;
 
-        static float logTime = 0.0f;
-        logTime += deltaTime;
         shader.setUniformMat4f("MVP", mvp);
 
         ////////////////On commence par vider les buffers///////////////
         renderer.Clear();
         renderer.Draw(va, o, shader);
 
-        /*o.position.x=2;
-        m = o.getModelMatrix();
-        v = cam.getViewMatrix();
-        p = cam.getProjectionMatrix();
-
-        mvp = p*v*m;
-        shader.setUniformMat4f("MVP", mvp);
-        renderer.Draw(va, o, shader);*/
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
         //Swap buffers : frame refresh

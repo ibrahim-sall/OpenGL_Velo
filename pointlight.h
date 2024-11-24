@@ -16,6 +16,7 @@ class PointLight {
         ~PointLight();
         void Bind(Shader shader);
         void Unbind();
+        void SetPower(float power, Shader shader);
     private:
         glm::vec3  position;
         glm::vec3 color;

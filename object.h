@@ -20,6 +20,7 @@ public:
     void Bind() const;
     void Unbind() const;
     void Draw() const;
+    glm::vec3 getHandlebarPosition();
     glm::vec3 position;
     glm::vec3 rotationAngles;
     glm::mat4 getModelMatrix();

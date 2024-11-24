@@ -150,4 +150,7 @@ bool Object::loadOBJ(const char *path, std::vector<glm::vec3> &out_vertices, std
 
     return true;
 }
+glm::vec3 Object::getHandlebarPosition(){
+    return position + glm::vec3(0.0f, 1.0f, 0.0f);
+}
 
