@@ -105,16 +105,20 @@ int main()
 
     glm::mat4 mvp = p*v*m;
 
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(m)));
+
     shader.setUniformMat4f("MVP", mvp);
+    //shader.setUniformMat4f("Normal", normalMatrix);
+
 
 /////////////////////////Lumière ambiante/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    PointLight ambiantLight(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.72f);
+    PointLight ambiantLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.72f);
     ambiantLight.Bind(shader);
 
 /////////////////////////Lumière sur le guidon/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    glm::vec3 handlebarPosition = o.getHandlebarPosition(); // Assuming this function exists and returns the position of the handlebar
-    PointLight pointLight(handlebarPosition, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+
+    PointLight pointLight(o.getHandlebarPosition(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.85f);
     pointLight.Bind(shader);
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,19 +157,24 @@ int main()
 
         ambiantLight.SetPower(0.5f + 0.4f * sin(currentTime), shader);
 
+        //pointLight.SetDirection(glm::vec3(o.rotationAngles.x, o.rotationAngles.y, o.rotationAngles.z));
+        //pointLight.SetPosition(o.getHandlebarPosition());
 
         glClearColor(
         colorlightblue[0] + (colordarkblue[0] - colorlightblue[0]) * (0.5f + 0.5f * sin(-currentTime)),
         colorlightblue[1] + (colordarkblue[1] - colorlightblue[1]) * (0.5f + 0.5f * sin(-currentTime)),
         colorlightblue[2] + (colordarkblue[2] - colorlightblue[2]) * (0.5f + 0.5f * sin(-currentTime)),
         colorlightblue[3]);
-
+        
         m = o.getModelMatrix();
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
 
         mvp = p*v*m;
+        normalMatrix = glm::transpose(glm::inverse(glm::mat3(m)));
 
+
+        shader.setUniformMat4f("model", m);
         shader.setUniformMat4f("MVP", mvp);
 
         ////////////////On commence par vider les buffers///////////////

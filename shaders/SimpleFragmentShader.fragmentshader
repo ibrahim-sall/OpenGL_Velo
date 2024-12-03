@@ -1,18 +1,66 @@
 #version 330 core
 
 in vec2 UV;
+in vec3 Normal;
+in vec3 FragPos;
+
 
 uniform sampler2D myTextureSampler;
 uniform vec3 color;
 uniform float power;
 
+uniform vec3 lightposition;
+uniform vec3 direction;
+uniform vec3 colorpoint;
+uniform float powerpoint;
+
+
+
 out vec4 FragColor;
 
 void main(){
+    vec3 surfacePos = vec3(UV, 0.0);
+
     vec3 textureColor = texture(myTextureSampler,UV).rgb;
 
     vec3 ambientLight = color * power;
 
-    vec3 finalColor = textureColor * ambientLight;
+    
+
+    vec3 surfaceToLight = normalize(lightposition - surfacePos);
+
+
+    float distanceToLight = length(lightposition- surfacePos);
+    
+    float attenuation = 1.0 / (1.0 + 0.09 * distanceToLight + 0.032 * (distanceToLight * distanceToLight));
+
+    float lightToSurfaceAngle = degrees(acos(dot(-surfaceToLight, normalize(direction))));
+    
+    if(lightToSurfaceAngle > 45.0){
+        attenuation = 0.0;
+    }
+    
+    float diffuseCoefficient = max(0.0, dot(normalize(Normal), surfaceToLight));
+    
+
+    vec3 diffuse = diffuseCoefficient * colorpoint * powerpoint;
+    
+    if (diffuseCoefficient == 0.0) {
+        // Affichez un message de debug si la lumière diffuse est nulle
+        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Rouge pour indiquer une erreur
+        return;
+    }
+
+    
+    if (attenuation == 0.0) {
+        // Affichez un message de debug si l'atténuation est nulle
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Vert pour indiquer une erreur
+        return;
+    }
+ 
+
+
+    vec3 finalColor = (ambientLight + attenuation * diffuse) * textureColor;
+    
     FragColor = vec4(finalColor, 1.0);
 }
