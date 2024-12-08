@@ -45,22 +45,9 @@ void main(){
 
     vec3 diffuse = diffuseCoefficient * colorpoint * powerpoint;
     
-    if (diffuseCoefficient == 0.0) {
-        // Affichez un message de debug si la lumière diffuse est nulle
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Rouge pour indiquer une erreur
-        return;
-    }
-
-    
-    if (attenuation == 0.0) {
-        // Affichez un message de debug si l'atténuation est nulle
-        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Vert pour indiquer une erreur
-        return;
-    }
- 
 
 
     vec3 finalColor = (ambientLight + attenuation * diffuse) * textureColor;
     
-        FragPos = vec3(FragPos * vec4(Normal, 1.0));
+    FragColor = vec4(finalColor, 1.0);
 }
