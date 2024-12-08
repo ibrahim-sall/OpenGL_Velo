@@ -40,8 +40,8 @@ add_executable(Open_gl
   camera.cpp
   fpscontrols.h
   fpscontrols.cpp
-  velo.h
-  velo.cpp
+  road.h
+  road.cpp
   pointlight.h
   pointlight.cpp
 )
