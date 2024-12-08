@@ -25,9 +25,10 @@ public:
     glm::vec3 rotationAngles;
     glm::mat4 getModelMatrix();
     glm::vec3 scale;
+
     static bool loadOBJ(const char *path, std::vector< glm::vec3 > &out_vertices, std::vector< glm::vec2 > &out_uvs, std::vector< glm::vec3 > &out_normals);
 
-private:
+protected:
     VertexBuffer *m_vb;
     UVBuffer *m_uvsb;
     Texture *m_texture;

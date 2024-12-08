@@ -88,23 +88,21 @@ int main()
     Camera cam(width, height);
     NavigationControls controls(window, &cam);
 
-    cam.position = glm::vec3(-1.01903, -2.73809, 5.8491);
+    cam.position = glm::vec3(0.f, 2.f, 5.8491f);
     cam.horizontalAngle = 3.09824f;
     cam.verticalAngle = -0.136719f;
 
     // Création de la route
     Road road = Road(path + "/RoadOBJ/road.obj", path + "/RoadOBJ/road.png");
-    road.position = glm::vec3(0.0f, -5.0f, 0.0f); // Ajustez cette valeur pour centrer la route dans la vue de la caméra
+    //road.position = glm::vec3(0.0f, -5.0f, 0.0f); // Ajustez cette valeur pour centrer la route dans la vue de la caméra
     road.rotationAngles.x = glm::radians(-90.0f);
 
     // Création des formes à afficher
     Object o = Object(path + "/BikeOBJ/Bike.obj", path + "/BikeOBJ/Bike.png");
-    
+    o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
     float distanceTraveled = 0.0f;
     
-    o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
-    o.position = road.getInitialPosition() * road.scale + road.position; // Ajustez la position initiale du vélo
-
+    o.position = road.getPositionAtDistance(0.0f); // Placer le vélo sur la route
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
     
@@ -151,6 +149,7 @@ int main()
 
     float lastTime = glfwGetTime();
     float currentTime, deltaTime;
+    float baseSpeed = 0.006f; 
 
     // Boucle de rendu
 
@@ -160,9 +159,10 @@ int main()
         lastTime = currentTime;
 
         float distanceStep = 0.0006f * glm::length(road.scale);
-        float baseSpeed = 0.006f; // Vitesse de base du vélo
+    // Vitesse de base du vélo
 
-        glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
+        glm::vec3 bikePosition = road.getPositionAtDistance(distanceTraveled);
+        //glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
 
         glm::vec3 direction = road.calculateDirection(distanceTraveled, distanceStep);
 
@@ -173,6 +173,7 @@ int main()
 
         // Calculer la rotation du vélo pour suivre la direction de la route
         o.rotationAngles.y = atan2(direction.z, direction.x);
+        o.rotationAngles.x = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
 
         o.position = bikePosition;
 
