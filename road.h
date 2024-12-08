@@ -18,11 +18,9 @@ public:
 
     float calculateTotalDistance();
     glm::vec3 getInitialPosition();
-    glm::vec3 getPositionAtDistance(float distance);
+    float getRoadScale() const;
 
     std::vector<glm::vec3> *vertices;
-
-private:
 
 };
 

@@ -102,7 +102,9 @@ int main()
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
     float distanceTraveled = 0.0f;
     
-    o.position = road.getPositionAtDistance(0.0f); // Placer le vélo sur la route
+    o.position = road.getInitialPosition();
+    o.position.y -= road.scale.y * 0.5f; // Ajustez la position en fonction de l'échelle de la route
+    std::cout << "Initial bike position: (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
     
@@ -149,7 +151,8 @@ int main()
 
     float lastTime = glfwGetTime();
     float currentTime, deltaTime;
-    float baseSpeed = 0.006f; 
+    float baseSpeed = 0.0006f; 
+    float roadScale = road.getRoadScale();
 
     // Boucle de rendu
 
@@ -158,24 +161,32 @@ int main()
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        float distanceStep = 0.0006f * glm::length(road.scale);
+        float distanceStep = baseSpeed * roadScale;
     // Vitesse de base du vélo
 
-        glm::vec3 bikePosition = road.getPositionAtDistance(distanceTraveled);
-        //glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
+        glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
 
         glm::vec3 direction = road.calculateDirection(distanceTraveled, distanceStep);
 
+        //std::cout << "Current bike position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
+        //std::cout << "Current bike direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+
         // Impressions de débogage
-        // std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
-        // std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
-        // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+        static float printTime = 0.0f;
+        printTime += deltaTime;
+        if (printTime >= 2.0f) {
+            // std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
+            std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
+            // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+
+            printTime = 0.0f;
+        }
 
         // Calculer la rotation du vélo pour suivre la direction de la route
         o.rotationAngles.y = atan2(direction.z, direction.x);
         o.rotationAngles.x = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
 
-        o.position = bikePosition;
+        //o.position = bikePosition;
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
