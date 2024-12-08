@@ -1,29 +1,30 @@
 #include <iostream>
 
-// ...existing code...
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "glm/glm.hpp"
-#include "object.h"
-#include "road.h"
+#include "vertexbuffer.h"
 #include "vertexarray.h"
 #include "shader.h"
 #include "renderer.h"
 #include "camera.h"
 #include "navigationcontrols.h"
+#include "road.h"
 #include "pointlight.h"
 
-// ...existing code...
+
+
+using namespace std;
 
 int main()
 {
-    std::string path = "/home/ibhou/Documents/OpenGL/OpenGL_API_V6";
-    // ...existing code...
-    // Initialisation de GLFW
+    string path = "/home/ibhou/Documents/OpenGL/OpenGL_API_V6";
+/////////////////////////Initialisation de GLFW/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     if(!glfwInit()){
         fprintf(stderr, "Failed to initialize GLFW\n");
         return -1;
     }
+
 
     glfwWindowHint(GLFW_SAMPLES, 4); //antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); //version 3.3
@@ -33,7 +34,10 @@ int main()
     // Cull triangles which normal is not towards the camera
     glEnable(GL_CULL_FACE);
 
-    // Ouverture de la fenêtre
+
+/////////////////////////Ouverture de la fenêtre/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //définition de la taille de la fenêtre
     int width=600;
     int height=600;
 
@@ -54,24 +58,29 @@ int main()
     //Enfin on définit la fenêtre créée comme la fenêtre sur laquelle on va dessiner
     glfwMakeContextCurrent(window);
 
-    // Initialisation de GLEW
+
+
+/////////////////////////Initialisation de GLEW/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Initialisation de GLEW
     glewExperimental=true;
     if (glewInit() != GLEW_OK){
         fprintf(stderr, "Erreur lors de l'initialisation de GLEW\n");
         return -1;
     }
 
-    // Création du Renderer
-    Renderer renderer;
-    
-    const glm::vec4 colorlightblue = glm::vec4(0.392f, 0.584f, 0.929f, 1.0f);
-    const glm::vec4 colordarkblue = glm::vec4(0.098f, 0.098f, 0.439f, 1.0f);
+/////////////////////////On crée un Renderer/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Création du Shader
-    Shader shader(path + "/shaders/SimpleVertexShader.vertexshader", path + "/shaders/SimpleFragmentShader.fragmentshader");
+    Renderer renderer;
+
+
+/////////////////////////On crée un Shader/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Shader shader(path+"/shaders/SimpleVertexShader.vertexshader", path+"/shaders/SimpleFragmentShader.fragmentshader");
     shader.Bind();
 
-    // Création du Vertex Array
+/////////////////////////On crée un vertex array/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     VertexArray va;
     va.Bind();
 
@@ -90,6 +99,7 @@ int main()
 
     // Création des formes à afficher
     Object o = Object(path + "/BikeOBJ/Bike.obj", path + "/BikeOBJ/Bike.png");
+    
     float distanceTraveled = 0.0f;
     
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
@@ -97,6 +107,7 @@ int main()
 
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
+    
     glm::mat4 m = o.getModelMatrix();
     glm::mat4 v = cam.getViewMatrix();
     glm::mat4 p = cam.getProjectionMatrix();
@@ -122,26 +133,43 @@ int main()
     PointLight pointLight(o.getHandlebarPosition(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.85f);
     pointLight.Bind(shader);
 
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    // Définir les contrôles de navigation comme pointeur utilisateur de la fenêtre
+    glfwSetWindowUserPointer(window, &controls);
+
+    //On indique la couleur de fond
+    const glm::vec4 colorlightblue = glm::vec4(0.392f, 0.584f, 0.929f, 1.0f);
+    const glm::vec4 colordarkblue = glm::vec4(0.098f, 0.098f, 0.439f, 1.0f);
+
+    glClearColor(colorlightblue[0], colorlightblue[1], colorlightblue[3], colorlightblue[3]);
+
+    //On autorise les tests de profondeur
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    float lastTime = glfwGetTime();
+    float currentTime, deltaTime;
+
     // Boucle de rendu
+
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window)) {
-        float lastTime = glfwGetTime();
-        float currentTime, deltaTime;
-
-        float distanceStep = 0.0006f * glm::length(road.scale);
-        float baseSpeed = 0.006f; // Vitesse de base du vélo
-
         currentTime = glfwGetTime();
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
+
+        float distanceStep = 0.0006f * glm::length(road.scale);
+        float baseSpeed = 0.006f; // Vitesse de base du vélo
 
         glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
 
         glm::vec3 direction = road.calculateDirection(distanceTraveled, distanceStep);
 
         // Impressions de débogage
-        std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
-        std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
-        std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+        // std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
+        // std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
+        // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
 
         // Calculer la rotation du vélo pour suivre la direction de la route
         o.rotationAngles.y = atan2(direction.z, direction.x);
@@ -154,10 +182,10 @@ int main()
         ambiantLight.SetPower(0.5f + 0.4f * sin(currentTime), shader);
 
         glClearColor(
-        colorlightblue[0] + (colordarkblue[0] - colorlightblue[0]) * (0.5f + 0.5f * sin(-currentTime)),
-        colorlightblue[1] + (colordarkblue[1] - colorlightblue[1]) * (0.5f + 0.5f * sin(-currentTime)),
-        colorlightblue[2] + (colordarkblue[2] - colorlightblue[2]) * (0.5f + 0.5f * sin(-currentTime)),
-        colorlightblue[3]);
+            colorlightblue[0] + (colordarkblue[0] - colorlightblue[0]) * (0.5f + 0.5f * sin(-currentTime)),
+            colorlightblue[1] + (colordarkblue[1] - colorlightblue[1]) * (0.5f + 0.5f * sin(-currentTime)),
+            colorlightblue[2] + (colordarkblue[2] - colorlightblue[2]) * (0.5f + 0.5f * sin(-currentTime)),
+            colorlightblue[3]);
         
         m = o.getModelMatrix();
         v = cam.getViewMatrix();

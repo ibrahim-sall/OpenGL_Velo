@@ -16,8 +16,6 @@ void NavigationControls::update(float deltaTime, Shader *shader)
 
         int state = glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT);
         double xpos, ypos;
-        glfwGetCursorPos(m_Window, &xpos, &ypos);
-        if(state == GLFW_PRESS){
             if (lastPosCursor.x!=-1){
                 m_Camera->horizontalAngle+= mouseSpeed * deltaTime * float( xpos-lastPosCursor.x );
                 m_Camera->verticalAngle  += mouseSpeed * deltaTime * float( ypos-lastPosCursor.y );
@@ -89,4 +87,3 @@ void NavigationControls::update(float deltaTime, Shader *shader)
         }
     }
 
-}
