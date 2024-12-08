@@ -16,6 +16,8 @@ public:
     glm::vec3 advancePosition(float& distanceTraveled, float distanceStep);
     glm::vec3 calculateDirection(float& distanceTraveled, float distanceStep);
 
+    glm::vec3 placeBikeOnCenter(float& distanceTraveled, float speed);
+
     float calculateTotalDistance();
     glm::vec3 getInitialPosition();
     float getRoadScale() const;

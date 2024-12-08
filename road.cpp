@@ -17,13 +17,54 @@ Road::~Road() {
     delete vertices;
 }
 
-glm::vec3 Road::advancePosition(float& distanceTraveled, float distanceStep) {
+glm::vec3 Road::advancePosition(float& distanceTraveled, float speed) {
     if (vertices->empty()) {
         return glm::vec3(0.0f);
     }
 
     float totalDistance = calculateTotalDistance();
-    distanceTraveled += distanceStep;
+    distanceTraveled += speed;
+
+    // Boucler la distance si elle dépasse la distance totale
+    if (distanceTraveled > totalDistance) {
+        distanceTraveled -= totalDistance;
+    }
+
+    float accumulatedDistance = 0.0f;
+    for (size_t i = 1; i < vertices->size(); ++i) {
+        float segmentDistance = glm::distance((*vertices)[i - 1], (*vertices)[i]);
+
+        if (accumulatedDistance + segmentDistance >= distanceTraveled) {
+            float localT = (distanceTraveled - accumulatedDistance) / segmentDistance;
+            glm::vec3 position = glm::mix((*vertices)[i - 1], (*vertices)[i], localT);
+
+            // Appliquer la transformation complète de la route
+            glm::mat4 modelMatrix = getModelMatrix();
+            glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
+
+            return glm::vec3(transformedPosition);
+        }
+
+        accumulatedDistance += segmentDistance;
+    }
+
+    // Retour à la position initiale
+    glm::vec3 position = (*vertices)[0];
+
+    // Appliquer la transformation complète de la route
+    glm::mat4 modelMatrix = getModelMatrix();
+    glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
+
+    return glm::vec3(transformedPosition);
+}
+
+glm::vec3 Road::calculateDirection(float& distanceTraveled, float speed) {
+    if (vertices->empty()) {
+        return glm::vec3(0.0f);
+    }
+
+    float totalDistance = calculateTotalDistance();
+    distanceTraveled += speed;
 
     // Boucler la distance si elle dépasse la distance totale
     if (distanceTraveled > totalDistance) {
@@ -35,66 +76,28 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float distanceStep) {
         float segmentDistance = glm::distance((*vertices)[i - 1], (*vertices)[i]);
         if (accumulatedDistance + segmentDistance >= distanceTraveled) {
             float localT = (distanceTraveled - accumulatedDistance) / segmentDistance;
-            glm::vec3 position = glm::mix((*vertices)[i - 1], (*vertices)[i], localT);
+            glm::vec3 direction = glm::normalize(glm::mix((*vertices)[i - 1], (*vertices)[i], localT) - (*vertices)[i - 1]);
 
-            // Appliquer la rotation et la mise à l'échelle
-            glm::mat4 transformMatrix = glm::mat4(1.0f);
-            transformMatrix = glm::translate(transformMatrix, position);
-            transformMatrix = glm::rotate(transformMatrix, rotationAngles.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            transformMatrix = glm::rotate(transformMatrix, rotationAngles.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            transformMatrix = glm::rotate(transformMatrix, rotationAngles.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            transformMatrix = glm::scale(transformMatrix, scale);
+            // Calculer les angles de rotation pour suivre la direction de la route
+            float yaw = atan2(direction.z, direction.x);
+            float pitch = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
 
-            glm::vec4 transformedPosition = transformMatrix * glm::vec4(position, 1.0f);
-
-            return glm::vec3(transformedPosition);
+            return direction;
         }
         accumulatedDistance += segmentDistance;
     }
 
-    return vertices->back();
-}
-
-glm::vec3 Road::calculateDirection(float& distanceTraveled, float distanceStep) {
-    if (vertices->empty()) {
-        return glm::vec3(0.0f);
-    }
-
-    float totalDistance = calculateTotalDistance();
-    distanceTraveled += distanceStep;
-
-    // Boucler la distance si elle dépasse la distance totale
-    if (distanceTraveled > totalDistance) {
-        distanceTraveled -= totalDistance;
-    }
-
-    float accumulatedDistance = 0.0f;
-    for (size_t i = 1; i < vertices->size(); ++i) {
-        float segmentDistance = glm::distance((*vertices)[i - 1], (*vertices)[i]);
-        if (accumulatedDistance + segmentDistance >= distanceTraveled) {
-            glm::vec3 direction = glm::normalize((*vertices)[i] - (*vertices)[i - 1]);
-
-            // Appliquer la rotation et la mise à l'échelle
-            glm::mat4 transformMatrix = glm::rotate(glm::mat4(1.0f), rotationAngles.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            transformMatrix = glm::scale(transformMatrix, scale);
-            glm::vec4 transformedDirection = transformMatrix * glm::vec4(direction, 0.0f);
-
-            return glm::vec3(transformedDirection);
-        }
-        accumulatedDistance += segmentDistance;
-    }
-
-    // Return direction towards the initial position if a full loop is completed
+    // Retourner la direction initiale si une boucle complète est terminée
     glm::vec3 initialPosition = getInitialPosition();
     glm::vec3 direction = glm::normalize(initialPosition - vertices->back());
 
-    // Appliquer la rotation et la mise à l'échelle
-    glm::mat4 transformMatrix = glm::rotate(glm::mat4(1.0f), rotationAngles.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    transformMatrix = glm::scale(transformMatrix, scale);
-    glm::vec4 transformedDirection = transformMatrix * glm::vec4(direction, 0.0f);
+    // Calculer les angles de rotation pour suivre la direction de la route
+    float yaw = atan2(direction.z, direction.x);
+    float pitch = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
 
-    return glm::vec3(transformedDirection);
+    return glm::vec3(pitch, yaw, 0.0f);
 }
+
 
 float Road::calculateTotalDistance() {
     float totalDistance = 0.0f;
@@ -107,15 +110,6 @@ float Road::calculateTotalDistance() {
 glm::vec3 Road::getInitialPosition(){
     if (!vertices->empty()) {
         glm::vec3 initialPosition = (*vertices)[0];
-        std::cout << "Initial position: (" << initialPosition.x << ", " << initialPosition.y << ", " << initialPosition.z << ")" << std::endl;
-
-        // Compare initial position with vertices
-        for (const auto& vertex : *vertices) {
-            if (initialPosition == vertex) {
-                std::cout << "Initial position matches vertex: (" << vertex.x << ", " << vertex.y << ", " << vertex.z << ")" << std::endl;
-            }
-        }
-
         return initialPosition;
     }
     return glm::vec3(0.0f);
@@ -135,6 +129,5 @@ float Road::getRoadScale() const {
     }
 
     glm::vec3 dimensions = maxVertex - minVertex;
-    std::cout << "Road dimensions: (" << dimensions.x << ", " << dimensions.y << ", " << dimensions.z << ")" << std::endl;
     return glm::length(dimensions);
 }
