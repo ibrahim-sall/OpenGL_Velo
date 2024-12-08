@@ -19,7 +19,8 @@ Object::Object(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std:
     m_normalsb = nullptr;
 
 }
-Object::Object(std::string string, std::string texturePath){
+Object::Object(std::string string, std::string texturePath)
+    : position(glm::vec3(0.0f)), rotationAngles(glm::vec3(0.0f)), scale(glm::vec3(1.0f)) {
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
@@ -72,6 +73,7 @@ glm::mat4 Object::getModelMatrix()
     glm::mat4 m = glm::rotate(glm::translate(glm::mat4(1), position), rotationAngles.x, glm::vec3(1,0,0));
     m=glm::rotate(m, rotationAngles.y, glm::vec3(0,1,0));
     m=glm::rotate(m, rotationAngles.z, glm::vec3(0,0,1));
+    m = glm::scale(m, scale);
     return m;
 }
 
@@ -150,4 +152,8 @@ bool Object::loadOBJ(const char *path, std::vector<glm::vec3> &out_vertices, std
 
     return true;
 }
+glm::vec3 Object::getHandlebarPosition(){
+    return position + glm::vec3(0.0f, 1.0f, 0.0f);
+}
+
 

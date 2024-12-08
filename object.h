@@ -2,7 +2,7 @@
 #define OBJECT_H
 
 #include <string>
-
+#include <vector>
 #include <glm/glm.hpp>
 
 #include "vertexbuffer.h"
@@ -16,21 +16,23 @@ public:
     Object(std::vector< glm::vec3 > vertices, std::vector< glm::vec2 > uvs, std::string texturePath);
     Object(std::vector< glm::vec3 > vertices, std::vector< glm::vec2 > uvs,  std::vector< glm::vec3 > normalsb, std::string texturePath);
     ~Object();
-    Object(std::string sting, std::string texturePath);
+    Object(std::string objPath, std::string texturePath);
     void Bind() const;
     void Unbind() const;
     void Draw() const;
+    glm::vec3 getHandlebarPosition();
     glm::vec3 position;
     glm::vec3 rotationAngles;
     glm::mat4 getModelMatrix();
+    glm::vec3 scale;
+
     static bool loadOBJ(const char *path, std::vector< glm::vec3 > &out_vertices, std::vector< glm::vec2 > &out_uvs, std::vector< glm::vec3 > &out_normals);
-private:
+
+protected:
     VertexBuffer *m_vb;
     UVBuffer *m_uvsb;
     Texture *m_texture;
     VertexBuffer *m_normalsb;
-
-
 };
 
 #endif // OBJECT_H

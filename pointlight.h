@@ -12,15 +12,20 @@
 
 class PointLight {
     public:
-        PointLight(glm::vec3  position, glm::vec3 color, float intensity);
+        PointLight(glm::vec3  position, float power);
+        PointLight(glm::vec3  position, glm::vec3 color, float power);
+        PointLight(glm::vec3 position, glm::vec3 color, glm::vec3 direction, float power);
         ~PointLight();
         void Bind(Shader shader);
         void Unbind();
+        void SetPower(float power, Shader shader);
+        void SetPosition(glm::vec3 position);
+        void SetDirection(glm::vec3 direction);
     private:
         glm::vec3  position;
         glm::vec3 color;
+        glm::vec3 direction;
         float power;
-
 };
 
 #endif
