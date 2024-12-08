@@ -93,19 +93,14 @@ int main()
     Road road = Road(path + "/RoadOBJ/road.obj", path + "/RoadOBJ/road.png");
     road.rotationAngles.x = glm::radians(-90.0f);
 
-    // Calcul de la ligne centrale de la route
-    std::vector<glm::vec3> centerline = road.calculateCenterline();
-    for (const auto& point : centerline) {
-        std::cout << "Centerline point: (" << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
-    }
 
-    // Création des formes à afficher
+    // Création du vélo
     Object o = Object(path + "/BikeOBJ/Bike.obj", path + "/BikeOBJ/Bike.png");
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
     float distanceTraveled = 0.0f; // Initialiser correctement la distance parcourue
     
     o.position = road.getInitialPosition();
-    std::cout << "Initial bike position: (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
+    std::cout << "Position de base (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
     
@@ -179,7 +174,6 @@ int main()
 
         glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep, currentSegment, accumulatedDistance);
 
-        glm::vec3 directionAngles = road.calculateDirection(distanceTraveled, distanceStep);
 
         //std::cout << "Current bike position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
         //std::cout << "Current bike direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
@@ -195,10 +189,9 @@ int main()
             printTime = 0.0f;
         }
 
-        // Mettre à jour les angles de rotation du vélo
-        //o.rotationAngles = directionAngles;
 
         o.position = bikePosition;
+        o.position.y += bikeHeightOffset;
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);

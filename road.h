@@ -13,14 +13,12 @@ public:
     Road(const std::string& objPath, const std::string& texturePath);
     ~Road();
     glm::vec3 advancePosition(float& distanceTraveled, float speed, size_t& currentSegment, float& accumulatedDistance);
-    glm::vec3 calculateDirection(float& distanceTraveled, float distanceStep);
 
     float calculateTotalDistance();
     glm::vec3 getInitialPosition();
 
     float getRoadScale() const;
 
-    std::vector<glm::vec3> calculateCenterline() const;
 
     std::vector<glm::vec3> *vertices;
 
