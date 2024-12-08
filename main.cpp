@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "vertexbuffer.h"
@@ -10,8 +9,6 @@
 #include "navigationcontrols.h"
 #include "road.h"
 #include "pointlight.h"
-
-
 
 using namespace std;
 
@@ -96,6 +93,12 @@ int main()
     Road road = Road(path + "/RoadOBJ/road.obj", path + "/RoadOBJ/road.png");
     road.rotationAngles.x = glm::radians(-90.0f);
 
+    // Calcul de la ligne centrale de la route
+    std::vector<glm::vec3> centerline = road.calculateCenterline();
+    for (const auto& point : centerline) {
+        std::cout << "Centerline point: (" << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
+    }
+
     // Création des formes à afficher
     Object o = Object(path + "/BikeOBJ/Bike.obj", path + "/BikeOBJ/Bike.png");
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
@@ -154,11 +157,15 @@ int main()
 
     float totalDistance = road.calculateTotalDistance();
 
-    float baseSpeed = totalDistance / 30.0f;
+    float baseSpeed = totalDistance / 100.0f;
 
     float roadScale = road.getRoadScale();
 
     float bikeHeightOffset = 1.6f * o.scale.y;
+
+    // Variables pour suivre le segment actuel et la distance accumulée
+    size_t currentSegment = 0;
+    float accumulatedDistance = 0.0f;
 
     // Boucle de rendu
 
@@ -170,7 +177,7 @@ int main()
         // Utiliser deltaTime pour un mouvement fluide en fonction du temps écoulé
         float distanceStep = baseSpeed * deltaTime;
 
-        glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep);
+        glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep, currentSegment, accumulatedDistance);
 
         glm::vec3 directionAngles = road.calculateDirection(distanceTraveled, distanceStep);
 
@@ -181,8 +188,8 @@ int main()
         static float printTime = 0.0f;
         printTime += deltaTime;
         if (printTime >= 1.0f) {
-            // std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
-            std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
+            //std::cout << "Distance Traveled: " << accumulatedDistance << std::endl;
+            //std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
             // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
 
             printTime = 0.0f;
@@ -192,8 +199,6 @@ int main()
         //o.rotationAngles = directionAngles;
 
         o.position = bikePosition;
-        o.position.y += bikeHeightOffset;
-
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);

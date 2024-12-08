@@ -12,15 +12,15 @@ class Road : public Object {
 public:
     Road(const std::string& objPath, const std::string& texturePath);
     ~Road();
-
-    glm::vec3 advancePosition(float& distanceTraveled, float distanceStep);
+    glm::vec3 advancePosition(float& distanceTraveled, float speed, size_t& currentSegment, float& accumulatedDistance);
     glm::vec3 calculateDirection(float& distanceTraveled, float distanceStep);
-
-    glm::vec3 placeBikeOnCenter(float& distanceTraveled, float speed);
 
     float calculateTotalDistance();
     glm::vec3 getInitialPosition();
+
     float getRoadScale() const;
+
+    std::vector<glm::vec3> calculateCenterline() const;
 
     std::vector<glm::vec3> *vertices;
 

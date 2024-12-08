@@ -1,4 +1,5 @@
 #include "road.h"
+#include <iostream>
 
 Road::Road(const std::string& objPath, const std::string& texturePath)
     : Object(objPath, texturePath), vertices(new std::vector<glm::vec3>()){
@@ -17,7 +18,7 @@ Road::~Road() {
     delete vertices;
 }
 
-glm::vec3 Road::advancePosition(float& distanceTraveled, float speed) {
+glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& currentSegment, float& accumulatedDistance) {
     if (vertices->empty()) {
         return glm::vec3(0.0f);
     }
@@ -25,20 +26,24 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed) {
     float totalDistance = calculateTotalDistance();
     distanceTraveled += speed;
 
-    // Boucler la distance si elle dépasse la distance totale
     if (distanceTraveled > totalDistance) {
         distanceTraveled -= totalDistance;
+        currentSegment = 0;
+        accumulatedDistance = 0.0f;
     }
 
-    float accumulatedDistance = 0.0f;
-    for (size_t i = 1; i < vertices->size(); ++i) {
-        float segmentDistance = glm::distance((*vertices)[i - 1], (*vertices)[i]);
+    while (currentSegment < vertices->size() - 1) {
+        float segmentDistance = glm::distance((*vertices)[currentSegment], (*vertices)[currentSegment + 1]);
 
         if (accumulatedDistance + segmentDistance >= distanceTraveled) {
             float localT = (distanceTraveled - accumulatedDistance) / segmentDistance;
-            glm::vec3 position = glm::mix((*vertices)[i - 1], (*vertices)[i], localT);
 
-            // Appliquer la transformation complète de la route
+            glm::vec3 position = glm::mix((*vertices)[currentSegment], (*vertices)[currentSegment + 1], localT);
+
+            // Centrer le vélo sur la route
+            glm::vec3 centerPosition = ((*vertices)[currentSegment] + (*vertices)[currentSegment + 1]) / 2.0f;
+            position.x = centerPosition.x;
+
             glm::mat4 modelMatrix = getModelMatrix();
             glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
 
@@ -46,12 +51,11 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed) {
         }
 
         accumulatedDistance += segmentDistance;
+        currentSegment++;
     }
 
-    // Retour à la position initiale
     glm::vec3 position = (*vertices)[0];
 
-    // Appliquer la transformation complète de la route
     glm::mat4 modelMatrix = getModelMatrix();
     glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
 
@@ -78,10 +82,6 @@ glm::vec3 Road::calculateDirection(float& distanceTraveled, float speed) {
             float localT = (distanceTraveled - accumulatedDistance) / segmentDistance;
             glm::vec3 direction = glm::normalize(glm::mix((*vertices)[i - 1], (*vertices)[i], localT) - (*vertices)[i - 1]);
 
-            // Calculer les angles de rotation pour suivre la direction de la route
-            float yaw = atan2(direction.z, direction.x);
-            float pitch = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
-
             return direction;
         }
         accumulatedDistance += segmentDistance;
@@ -91,13 +91,8 @@ glm::vec3 Road::calculateDirection(float& distanceTraveled, float speed) {
     glm::vec3 initialPosition = getInitialPosition();
     glm::vec3 direction = glm::normalize(initialPosition - vertices->back());
 
-    // Calculer les angles de rotation pour suivre la direction de la route
-    float yaw = atan2(direction.z, direction.x);
-    float pitch = atan2(direction.y, glm::length(glm::vec2(direction.x, direction.z)));
-
-    return glm::vec3(pitch, yaw, 0.0f);
+    return direction;
 }
-
 
 float Road::calculateTotalDistance() {
     float totalDistance = 0.0f;
@@ -131,3 +126,18 @@ float Road::getRoadScale() const {
     glm::vec3 dimensions = maxVertex - minVertex;
     return glm::length(dimensions);
 }
+
+std::vector<glm::vec3> Road::calculateCenterline() const {
+    std::vector<glm::vec3> centerline;
+    if (vertices->empty()) {
+        return centerline;
+    }
+
+    for (size_t i = 0; i < vertices->size() - 1; i += 2) {
+        glm::vec3 centerPosition = ((*vertices)[i] + (*vertices)[i + 1]) / 2.0f;
+        centerline.push_back(centerPosition);
+    }
+
+    return centerline;
+}
+
