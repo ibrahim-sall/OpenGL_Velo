@@ -24,6 +24,8 @@ PointLight::~PointLight()
 }
 
 void PointLight::Bind(Shader shader){
+    //pass variables to the shader
+    
     if (direction != glm::vec3(0.0f, 0.0f, 0.0f)){
         shader.setUniform3fv("lightposition", position);
         shader.setUniform3fv("colorpoint", color );

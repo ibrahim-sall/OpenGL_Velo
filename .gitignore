@@ -2,3 +2,5 @@ CMakeCache.txt
 /build
 /.vscode
 .cache
+.cache/clangd/index
+OpenGL_API_V6.pro.user
