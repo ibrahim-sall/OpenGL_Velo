@@ -37,16 +37,16 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& cu
 
             glm::vec3 position = glm::mix(centerLine[currentSegment], centerLine[currentSegment + 1], localT);
 
-            // Log center position for debugging
-            std::cout << "Center Position: (" << centerLine[currentSegment].x << ", " << centerLine[currentSegment].y << ", " << centerLine[currentSegment].z << ")" << std::endl;
+            // Position du centre
+            //std::cout << "Center Position: (" << centerLine[currentSegment].x << ", " << centerLine[currentSegment].y << ", " << centerLine[currentSegment].z << ")" << std::endl;
 
             glm::mat4 roadModelMatrix = getModelMatrix();
             glm::vec4 transformedPosition = roadModelMatrix * glm::vec4(position, 1.0f);
 
-            // Log transformed position for debugging
-            std::cout << "Transformed Bike Position: (" << transformedPosition.x << ", " << transformedPosition.y << ", " << transformedPosition.z << ")" << std::endl;
+            // Out transformed position
+            //std::cout << "Transformed Bike Position: (" << transformedPosition.x << ", " << transformedPosition.y << ", " << transformedPosition.z << ")" << std::endl;
 
-            // Check for outrageous variation
+            // I try to reduce intenpestive variation on x axis.
             if (glm::length(glm::vec3(transformedPosition) - lastTransformedPosition) > 0.20f) {
                 std::cerr << "Warning: Outrageous variation in transformed bike position detected!" << std::endl;
                 transformedPosition = glm::vec4(glm::mix(lastTransformedPosition, glm::vec3(transformedPosition), 0.5f), 1.0f);
@@ -70,6 +70,7 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& cu
 }
 
 float Road::calculateTotalDistance() {
+    //function to find the length of the road
     float totalDistance = 0.0f;
     for (size_t i = 1; i < vertices->size(); ++i) {
         totalDistance += glm::distance((*vertices)[i - 1], (*vertices)[i]);
@@ -78,6 +79,7 @@ float Road::calculateTotalDistance() {
 }
 
 glm::vec3 Road::getInitialPosition(){
+    //Function to get the initial position of the bike on the first vertice of the road
     if (!vertices->empty()) {
         glm::vec3 initialPosition = (*vertices)[0];
         return initialPosition;
@@ -86,6 +88,7 @@ glm::vec3 Road::getInitialPosition(){
 }
 
 float Road::getRoadScale() const {
+    //function to get the scale of the road
     if (vertices->empty()) {
         return 1.0f;
     }
@@ -101,7 +104,10 @@ float Road::getRoadScale() const {
     glm::vec3 dimensions = maxVertex - minVertex;
     return glm::length(dimensions);
 }
+
 std::vector<glm::vec3> Road::reconstructCenterLine() const {
+    //function to reconstruct the center line of the road (This function is not correct)
+    //I can't find the correct way to implement it
     std::vector<glm::vec3> centerLine;
 
     if (vertices->empty() || vertices->size() % 2 != 0) {

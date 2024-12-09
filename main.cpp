@@ -28,7 +28,6 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //version core
 
-    // Cull triangles which normal is not towards the camera
     glEnable(GL_CULL_FACE);
 
 
@@ -81,7 +80,8 @@ int main()
     VertexArray va;
     va.Bind();
 
-    // Création de la caméra et des contrôles
+/////////////////////////On crée la caméra et les contrôles/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     Camera cam(width, height);
     NavigationControls controls(window, &cam);
 
@@ -89,17 +89,20 @@ int main()
     cam.horizontalAngle = 3.09824f;
     cam.verticalAngle = -0.136719f;
 
-    // Création de la route
+ /////////////////////// Création de la route////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
     Road road = Road(path + "/RoadOBJ/road.obj", path + "/RoadOBJ/road.png");
     road.rotationAngles.x = glm::radians(-90.0f);
 
+//////////////////////// Création du vélo////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Création du vélo
+
     Object o = Object(path + "/BikeOBJ/Bike.obj", path + "/BikeOBJ/Bike.png");
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
-    float distanceTraveled = 0.0f; // Initialiser correctement la distance parcourue
     
-    std::cout << "Position de base (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
+    
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
     
@@ -119,18 +122,20 @@ int main()
 
     shader.setUniformMat4f("model", roadModelMatrix);
     shader.setUniformMat4f("MVP", roadMVP);
+    
+ ///////////////////////// Lumière ambiante////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Lumière ambiante
+
     PointLight ambiantLight(glm::vec3(1.0f), 0.72f);
     ambiantLight.Bind(shader);
 
-    // Lumière sur le guidon
-    PointLight pointLight(o.getHandlebarPosition(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.85f);
+ ///////////////////////// Lumière sur le guidon////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    PointLight pointLight(road.getInitialPosition(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.85f);
     pointLight.Bind(shader);
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    // Définir les contrôles de navigation comme pointeur utilisateur de la fenêtre
     glfwSetWindowUserPointer(window, &controls);
 
     //On indique la couleur de fond
@@ -144,7 +149,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    //While variable 
+
+ ///////////////////////// Variables pour la boucle de rendu////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   
+    float distanceTraveled = 0.0f;
 
     float lastTime = glfwGetTime();
     float currentTime, deltaTime;
@@ -157,32 +166,46 @@ int main()
 
     float bikeHeightOffset = 1.6f * o.scale.y;
 
-    // Variables pour suivre le segment actuel et la distance accumulée
     size_t currentSegment = 0;
     float accumulatedDistance = 0.0f;
 
-    // Boucle de rendu
+ ///////////////////////// Boucle de rendu ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window)) {
         currentTime = glfwGetTime();
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        // Utiliser deltaTime pour un mouvement fluide en fonction du temps écoulé
         float distanceStep = baseSpeed * deltaTime;
+
+        //On fait avancer le vélo (d'une position sur la route)
 
         glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep, currentSegment, accumulatedDistance);
 
-        // Centrer le vélo sur la route
         o.position = bikePosition;
+
+        //On ajoute un offset pour que vélo soit au dessus de la route
         o.position.y += bikeHeightOffset;
 
-        // Log bike position for debugging
-        std::cout << "Bike Position: (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
+        // Impressions de débogage
+        static float printTime = 0.0f;
+        printTime += deltaTime;
+        if (printTime >= 1.0f) {
+            // std::cout << "Distance Traveled: " << distanceTraveled << std::endl;
+            //std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
+            // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+
+            printTime = 0.0f;
+        }
+
+
+        // Contrôle de la caméra
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
 
+        // Contrôle des lumières et de la couleur de fond
         ambiantLight.SetPower(0.5f + 0.4f * sin(currentTime), shader);
 
         glClearColor(
@@ -214,13 +237,10 @@ int main()
 
         renderer.Draw(va, road, shader);
 
-        // Dessiner les points
         shader.Bind();
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
-        //Swap buffers : frame refresh
         glfwSwapBuffers(window);
-        //get the events
         glfwPollEvents();
     }
 
