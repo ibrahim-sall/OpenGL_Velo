@@ -99,7 +99,6 @@ int main()
     o.scale = glm::vec3(0.035f, 0.035f, 0.035f);
     float distanceTraveled = 0.0f; // Initialiser correctement la distance parcourue
     
-    o.position = road.getInitialPosition();
     std::cout << "Position de base (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
     // Création de la matrice MVP
     cam.computeMatrices(width, height);
@@ -174,24 +173,12 @@ int main()
 
         glm::vec3 bikePosition = road.advancePosition(distanceTraveled, distanceStep, currentSegment, accumulatedDistance);
 
-
-        //std::cout << "Current bike position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
-        //std::cout << "Current bike direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
-
-        // Impressions de débogage
-        static float printTime = 0.0f;
-        printTime += deltaTime;
-        if (printTime >= 1.0f) {
-            //std::cout << "Distance Traveled: " << accumulatedDistance << std::endl;
-            //std::cout << "Bike Position: (" << bikePosition.x << ", " << bikePosition.y << ", " << bikePosition.z << ")" << std::endl;
-            // std::cout << "Direction: (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
-
-            printTime = 0.0f;
-        }
-
-
+        // Centrer le vélo sur la route
         o.position = bikePosition;
         o.position.y += bikeHeightOffset;
+
+        // Log bike position for debugging
+        std::cout << "Bike Position: (" << o.position.x << ", " << o.position.y << ", " << o.position.z << ")" << std::endl;
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
@@ -229,7 +216,6 @@ int main()
 
         // Dessiner les points
         shader.Bind();
-
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
         //Swap buffers : frame refresh

@@ -19,8 +19,12 @@ public:
 
     float getRoadScale() const;
 
+    std::vector<glm::vec3> reconstructCenterLine() const;
 
     std::vector<glm::vec3> *vertices;
+
+private:
+    std::vector<glm::vec3> centerLine;
 
 };
 

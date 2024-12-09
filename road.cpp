@@ -6,12 +6,7 @@ Road::Road(const std::string& objPath, const std::string& texturePath)
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
     loadOBJ(objPath.c_str(), *vertices,  uvs, normals);
-
-    // Log vertices for debugging
-    std::cout << "Vertices loaded:" << std::endl;
-    // for (const auto& vertex : *vertices) {
-    //     std::cout << "Vertex: (" << vertex.x << ", " << vertex.y << ", " << vertex.z << ")" << std::endl;
-    // }
+    centerLine = reconstructCenterLine();
 }
 
 Road::~Road() {
@@ -19,7 +14,7 @@ Road::~Road() {
 }
 
 glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& currentSegment, float& accumulatedDistance) {
-    if (vertices->empty()) {
+    if (centerLine.empty()) {
         return glm::vec3(0.0f);
     }
 
@@ -32,20 +27,32 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& cu
         accumulatedDistance = 0.0f;
     }
 
-    while (currentSegment < vertices->size() - 1) {
-        float segmentDistance = glm::distance((*vertices)[currentSegment], (*vertices)[currentSegment + 1]);
+    static glm::vec3 lastTransformedPosition = glm::vec3(getModelMatrix() * glm::vec4(centerLine[0], 1.0f));
+
+    while (currentSegment < centerLine.size() - 1) {
+        float segmentDistance = glm::distance(centerLine[currentSegment], centerLine[currentSegment + 1]);
 
         if (accumulatedDistance + segmentDistance >= distanceTraveled) {
             float localT = (distanceTraveled - accumulatedDistance) / segmentDistance;
 
-            glm::vec3 position = glm::mix((*vertices)[currentSegment], (*vertices)[currentSegment + 1], localT);
+            glm::vec3 position = glm::mix(centerLine[currentSegment], centerLine[currentSegment + 1], localT);
 
-            // Centrer le vélo sur la route
-            glm::vec3 centerPosition = ((*vertices)[currentSegment] + (*vertices)[currentSegment + 1]) / 2.0f;
-            position.x = centerPosition.x;
+            // Log center position for debugging
+            std::cout << "Center Position: (" << centerLine[currentSegment].x << ", " << centerLine[currentSegment].y << ", " << centerLine[currentSegment].z << ")" << std::endl;
 
-            glm::mat4 modelMatrix = getModelMatrix();
-            glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
+            glm::mat4 roadModelMatrix = getModelMatrix();
+            glm::vec4 transformedPosition = roadModelMatrix * glm::vec4(position, 1.0f);
+
+            // Log transformed position for debugging
+            std::cout << "Transformed Bike Position: (" << transformedPosition.x << ", " << transformedPosition.y << ", " << transformedPosition.z << ")" << std::endl;
+
+            // Check for outrageous variation
+            if (glm::length(glm::vec3(transformedPosition) - lastTransformedPosition) > 0.20f) {
+                std::cerr << "Warning: Outrageous variation in transformed bike position detected!" << std::endl;
+                transformedPosition = glm::vec4(glm::mix(lastTransformedPosition, glm::vec3(transformedPosition), 0.5f), 1.0f);
+            }
+
+            lastTransformedPosition = glm::vec3(transformedPosition);
 
             return glm::vec3(transformedPosition);
         }
@@ -54,10 +61,10 @@ glm::vec3 Road::advancePosition(float& distanceTraveled, float speed, size_t& cu
         currentSegment++;
     }
 
-    glm::vec3 position = (*vertices)[0];
+    glm::vec3 position = centerLine.back();
 
-    glm::mat4 modelMatrix = getModelMatrix();
-    glm::vec4 transformedPosition = modelMatrix * glm::vec4(position, 1.0f);
+    glm::mat4 roadModelMatrix = getModelMatrix();
+    glm::vec4 transformedPosition = roadModelMatrix * glm::vec4(position, 1.0f);
 
     return glm::vec3(transformedPosition);
 }
@@ -93,4 +100,21 @@ float Road::getRoadScale() const {
 
     glm::vec3 dimensions = maxVertex - minVertex;
     return glm::length(dimensions);
+}
+std::vector<glm::vec3> Road::reconstructCenterLine() const {
+    std::vector<glm::vec3> centerLine;
+
+    if (vertices->empty() || vertices->size() % 2 != 0) {
+        return centerLine;
+    }
+
+    for (size_t i = 0; i < vertices->size(); i += 2) {
+        glm::vec3 leftVertex = (*vertices)[i];
+        glm::vec3 rightVertex = (*vertices)[i + 1];
+
+        glm::vec3 centerPosition = (leftVertex + rightVertex) / 2.0f;
+        centerLine.push_back(centerPosition);
+    }
+
+    return centerLine;
 }
